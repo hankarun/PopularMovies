@@ -7,6 +7,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
 import com.hankarun.popularmovies.Movie;
+import com.hankarun.popularmovies.StaticTexts;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -22,8 +23,7 @@ public class PosterAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        //Movies.getsize();
-        return 0;
+        return mMovies.size();
     }
 
     @Override
@@ -42,13 +42,16 @@ public class PosterAdapter extends BaseAdapter {
 
         if (convertView == null) {
             imageView = new ImageView(mContext);
-            //Movie.get(position).Url;
-            Picasso.with(mContext).load("").into(imageView);
         }
         else
         {
             imageView = (ImageView) convertView;
         }
+
+        Picasso.with(mContext).load(StaticTexts.mImageBaseUrl+mMovies.get(position).getMoviePosterUrl()).into(imageView);
+
+        imageView.setAdjustViewBounds(true);
+        imageView.setScaleType(ImageView.ScaleType.FIT_XY);
         return imageView;
     }
 }

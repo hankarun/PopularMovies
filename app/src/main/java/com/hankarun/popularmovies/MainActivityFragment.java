@@ -1,18 +1,21 @@
 package com.hankarun.popularmovies;
 
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.VolleyLog;
-import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.hankarun.popularmovies.adapters.PosterAdapter;
 
 import org.json.JSONArray;
@@ -22,9 +25,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A placeholder fragment containing a simple view.
- */
+
 public class MainActivityFragment extends Fragment {
     private List<Movie> mMovies;
     private PosterAdapter mAdapter;
@@ -36,53 +37,84 @@ public class MainActivityFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        mMovies = new ArrayList<>();
-        mAdapter = new PosterAdapter(getActivity().getApplicationContext(),mMovies);
+        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        return inflater.inflate(R.layout.fragment_main, container, false);
-        //Get all of the movies
-        //Load images from urls.
+        mMovies = new ArrayList<>();
+
+        mMovieGridView = (GridView) rootView.findViewById(R.id.gridView);
+        mAdapter = new PosterAdapter(getActivity().getApplicationContext(),mMovies);
+        mMovieGridView.setAdapter(mAdapter);
+        mMovieGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.i("ITEM_CLICKED", "" + mMovies.get(position).getOriginalTitle());
+            }
+        });
+
+
+
+        makeJsonArrayRequest(StaticTexts.SORT_BY_POPULAR);
+
+        setHasOptionsMenu(true);
+
+        return rootView;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        // TODO Auto-generated method stub
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.movie_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // handle item selection
+        switch (item.getItemId()) {
+            case R.id.action_sort_pop:
+                makeJsonArrayRequest(StaticTexts.SORT_BY_POPULAR);
+                return true;
+            case R.id.action_sort_rate:
+                makeJsonArrayRequest(StaticTexts.SORT_BY_RATING);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private void makeJsonArrayRequest(Integer sortType) {
         mMovies.clear();
-        String url = "";
+        String url;
         if(sortType == StaticTexts.SORT_BY_POPULAR){
-            url = StaticTexts.mBaseUrl+StaticTexts.mPopularMoviesUrl;
+            url = StaticTexts.mPopularMoviesUrl;
         }else{
-            url = StaticTexts.mBaseUrl+StaticTexts.mHighestRatedMoviesUrl;
+            url = StaticTexts.mRatingsMoviesUrl;
         }
 
-        JsonArrayRequest req = new JsonArrayRequest(url,
-                new Response.Listener<JSONArray>() {
+        final JsonObjectRequest req = new JsonObjectRequest(url,
+                new Response.Listener<JSONObject>() {
                     @Override
-                    public void onResponse(JSONArray response) {
+                    public void onResponse(JSONObject response) {
 
                         try {
-                            for (int i = 0; i < response.length(); i++) {
+                            JSONArray array = response.getJSONArray("results");
+                            for (int i = 0; i < array.length(); i++) {
 
-                                Movie movie = new Movie((JSONObject) response.get(i));
-
+                                Movie movie = new Movie((JSONObject) array.get(i));
                                 mMovies.add(movie);
-                                //Add movie to the array
                             }
 
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            Toast.makeText(getActivity().getApplicationContext(),
-                                    "Error: " + e.getMessage(),
-                                    Toast.LENGTH_LONG).show();
                         } catch (Exception e){
 
                         }
 
-                        //Close vaiting dialog
+                        mAdapter.notifyDataSetChanged();
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getActivity().getApplicationContext(),
-                        error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
 

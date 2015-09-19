@@ -16,4 +16,8 @@ public class Movie {
         userRating = movie.getString(StaticTexts.apiUserRating);
         moviePoster = movie.getString(StaticTexts.apiPoster);
     }
+
+    public String getMoviePosterUrl(){ return moviePoster;}
+    public String getOriginalTitle(){return originalTitle;}
+
 }
