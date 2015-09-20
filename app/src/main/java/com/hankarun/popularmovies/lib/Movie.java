@@ -10,7 +10,7 @@ public class Movie {
     private String moviePoster;
     private String id;
 
-    private JSONObject mMovie;
+    private final JSONObject mMovie;
 
     public Movie(JSONObject movie) throws Exception{
         mMovie = movie;
@@ -26,8 +26,9 @@ public class Movie {
     public String getMoviePosterUrl(){ return moviePoster;}
     public String getOriginalTitle(){ return originalTitle;}
     public String getOverview(){ return overview;}
-    public String getReleaseDate() { return releaseDate;}
-    public String getUserRating() { return userRating;}
+    public String getReleaseDate(){ return releaseDate;}
+    public String getUserRating(){ return userRating;}
+    public String getId(){ return id;}
 
     public String toString(){ return mMovie.toString();}
 

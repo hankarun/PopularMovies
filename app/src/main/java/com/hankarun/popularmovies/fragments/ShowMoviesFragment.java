@@ -36,7 +36,6 @@ public class ShowMoviesFragment extends Fragment {
     private List<Movie> mMovies;
     private PosterAdapter mAdapter;
     private int mCurrentScreen = StaticTexts.SORT_BY_POPULAR;
-    private ShowMoviesActivity mainActivity;
 
     public ShowMoviesFragment() {
     }
@@ -49,14 +48,13 @@ public class ShowMoviesFragment extends Fragment {
             mCurrentScreen = savedInstanceState.getInt("data");
         }
 
-        mainActivity = (ShowMoviesActivity) getActivity();
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         mMovies = new ArrayList<>();
 
         GridView mMovieGridView = (GridView) rootView.findViewById(R.id.gridView);
-        mAdapter = new PosterAdapter(mainActivity.getApplicationContext(),mMovies);
+        mAdapter = new PosterAdapter(getActivity().getApplicationContext(),mMovies);
         mMovieGridView.setAdapter(mAdapter);
         mMovieGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

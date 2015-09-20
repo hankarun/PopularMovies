@@ -13,8 +13,8 @@ import com.squareup.picasso.Picasso;
 import java.util.List;
 
 public class PosterAdapter extends BaseAdapter {
-    private Context mContext;
-    private List<Movie> mMovies;
+    private final Context mContext;
+    private final List<Movie> mMovies;
 
     public PosterAdapter(Context c, List<Movie> _movies) {
         mMovies = _movies;
