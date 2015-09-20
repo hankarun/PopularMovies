@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/action_sort_pop"
-        android:title="Sort by Popularity"
+        android:title="@string/sort_by_popular"
         />
 
     <!-- Location Found -->
     <item android:id="@+id/action_sort_rate"
-        android:title="Sort by Rating"
+        android:title="@string/sort_by_rating"
         />
 </menu>

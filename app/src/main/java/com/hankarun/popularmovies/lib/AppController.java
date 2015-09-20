@@ -1,4 +1,4 @@
-package com.hankarun.popularmovies;
+package com.hankarun.popularmovies.lib;
 
 import android.app.Application;
 import android.text.TextUtils;

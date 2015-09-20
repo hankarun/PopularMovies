@@ -6,8 +6,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
-import com.hankarun.popularmovies.Movie;
-import com.hankarun.popularmovies.StaticTexts;
+import com.hankarun.popularmovies.lib.Movie;
+import com.hankarun.popularmovies.lib.StaticTexts;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;

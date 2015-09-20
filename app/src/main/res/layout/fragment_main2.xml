@@ -1,0 +1,60 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/scrollView">
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.hankarun.popularmovies.fragments.OneMovieFragment">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/imageView"
+            android:minHeight="100dp"
+            android:background="@color/background_material_dark" />
+
+        <ImageView
+            android:layout_width="130dp"
+            android:layout_height="190dp"
+            android:id="@+id/posterImageView"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:adjustViewBounds="true"
+            android:layout_marginTop="20dp"
+            android:layout_marginLeft="20dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New Text"
+            android:id="@+id/ratingTextView"
+            style="@style/RatingTextStyle"
+            android:layout_alignTop="@+id/posterImageView"
+            android:layout_alignLeft="@+id/releaseDateViewText"
+            android:layout_alignStart="@+id/releaseDateViewText" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New Text"
+            android:id="@+id/releaseDateViewText"
+            style="@style/RelaseDateStyle"
+            android:layout_below="@+id/ratingTextView"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="10dp" />
+
+        <WebView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/overViewWebView"
+            android:layout_below="@+id/posterImageView"
+            android:layout_margin="20dp"
+            android:background="@android:color/transparent"
+            android:layerType="software"/>
+
+
+
+    </RelativeLayout>
+</ScrollView>

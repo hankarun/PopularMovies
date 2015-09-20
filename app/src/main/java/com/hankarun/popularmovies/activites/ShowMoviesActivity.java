@@ -1,11 +1,11 @@
-package com.hankarun.popularmovies;
+package com.hankarun.popularmovies.activites;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.support.v7.app.AppCompatActivity;
 
-public class MainActivity extends AppCompatActivity {
+import com.hankarun.popularmovies.R;
+
+public class ShowMoviesActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
