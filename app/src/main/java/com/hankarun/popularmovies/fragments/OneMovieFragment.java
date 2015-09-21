@@ -30,6 +30,7 @@ public class OneMovieFragment extends Fragment implements OnClickListener {
     private ImageView mStarImageView;
     private Toast mFavoriteMessage;
     private Movie mMovie;
+    private View mRootView;
 
     public OneMovieFragment() {
     }
@@ -37,37 +38,65 @@ public class OneMovieFragment extends Fragment implements OnClickListener {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        OneMovieActivity activity = (OneMovieActivity) getActivity();
-        this.mMovie = activity.mMovie;
 
-        View rootView = inflater.inflate(R.layout.fragment_main2, container, false);
+        if( savedInstanceState != null){
+            mMovie = savedInstanceState.getParcelable("movie");
+        }
 
+        mRootView = inflater.inflate(R.layout.fragment_main2, container, false);
+
+        //Check if tablet ui is present.
+        if(!getActivity().getTitle().toString().equals("Popular Movies")){
+            OneMovieActivity activity = (OneMovieActivity) getActivity();
+            this.mMovie = activity.mMovie;
+            setViews(mRootView);
+            makeDataRequests();
+        }
+        else{
+            if(mMovie != null){
+                //Oriantation change
+                setViews(mRootView);
+                makeDataRequests();
+            }
+            // TODO This is tablet ui. Show empty layout
+        }
+
+        return mRootView;
+    }
+
+    private void makeDataRequests(){
+        makeJsonArrayRequest(StaticTexts.GET_VIDEOS);
+        makeJsonArrayRequest(StaticTexts.GET_REVIEWS);
+    }
+
+    private void setViews(View rootView){
         ImageView mImageView = (ImageView) rootView.findViewById(R.id.posterImageView);
         TextView mRatingView = (TextView) rootView.findViewById(R.id.ratingTextView);
         TextView mReleaseDate = (TextView) rootView.findViewById(R.id.releaseDateViewText);
+        TextView mMovieName = (TextView) rootView.findViewById(R.id.movieNameView);
         WebView mOverview = (WebView) rootView.findViewById(R.id.overViewWebView);
         mStarImageView = (ImageView) rootView.findViewById(R.id.starImageView);
         mStarImageView.setOnClickListener(this);
 
         Picasso.with(getActivity().getApplicationContext())
-                .load(StaticTexts.mImageBaseUrl+ mMovie.getMoviePosterUrl())
+                .load(StaticTexts.mImageBaseUrl + mMovie.getMoviePosterUrl())
+                .placeholder(R.drawable.ic_a10)
                 .into(mImageView);
 
         String text = "<html><body>" +
-                "<h1 align=\"center\">"+activity.getString(R.string.overview)+"</h1>"
-                         + "<p align=\"justify\">"
-                         + mMovie.getOverview()
-                         + "</p> "
-                         + "</body></html>";
+                "<h1 align=\"center\">"+getActivity().getString(R.string.overview)+"</h1>"
+                + "<p align=\"justify\">"
+                + mMovie.getOverview()
+                + "</p> "
+                + "</body></html>";
 
         mOverview.loadData(text, "text/html", "utf-8");
         mRatingView.setText(mMovie.getUserRating() + "/10");
         mReleaseDate.setText(mMovie.getReleaseDate().subSequence(0, 4));
+        mMovieName.setText(mMovie.getOriginalTitle());
 
         mImageView.setAdjustViewBounds(true);
         mImageView.setScaleType(ImageView.ScaleType.FIT_XY);
-
-        return rootView;
     }
 
     private void showToast(String message){
@@ -75,6 +104,13 @@ public class OneMovieFragment extends Fragment implements OnClickListener {
             mFavoriteMessage.cancel();
         mFavoriteMessage = Toast.makeText(getActivity().getApplicationContext(),message,Toast.LENGTH_SHORT);
         mFavoriteMessage.show();
+    }
+
+    //When tablet ui present activity set fragment.
+    public void setMovie(Movie movie){
+        mMovie = movie;
+        setViews(mRootView);
+        makeDataRequests();
     }
 
     @Override
@@ -89,14 +125,14 @@ public class OneMovieFragment extends Fragment implements OnClickListener {
                     mStarImageView.setImageResource(R.drawable.ic_star_yellow_400_36dp);
                 }
                 showToast(message);
-
+                // TODO save current movie to the database check for duoble entry
                 mIsFavorite = ! mIsFavorite;
                 break;
         }
     }
 
     private void makeJsonArrayRequest(final int requestType) {
-        String url = "";
+        String url;
         if(requestType == StaticTexts.GET_VIDEOS) {
             url = StaticTexts.mMovieBaseUrl + mMovie.getId() + StaticTexts.mMovieVideoUrl;
         }else{
@@ -107,9 +143,7 @@ public class OneMovieFragment extends Fragment implements OnClickListener {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        if(requestType == StaticTexts.GET_VIDEOS) {
-                            getVideos(response);
-                        }
+                            getChilds(response, requestType);
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -120,15 +154,25 @@ public class OneMovieFragment extends Fragment implements OnClickListener {
         AppController.getInstance().addToRequestQueue(req,requestType+"");
     }
 
-    private void getVideos(JSONObject object){
+    private void getChilds(JSONObject object, int requestType){
         try {
-            mMovie.setVideos(object.getJSONArray("results"));
-
-            //List view ile guncellenecek.
+            if(requestType == StaticTexts.GET_VIDEOS){
+                mMovie.setVideos(object.getJSONArray("results"));
+                // TODO: List view güncelle
+            } else {
+                mMovie.setReviews(object.getJSONArray("results"));
+                // TODO: List view güncelle
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         } catch (Exception e){
             Log.e("Exception", e.getMessage());
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable("movie",mMovie);
     }
 }

@@ -7,7 +7,7 @@ public class StaticTexts {
     private static final String mMovieDiscoveryUrl = mApiBaseUrl + "/discover/movie";
     public static final String mPopularMoviesUrl = mMovieDiscoveryUrl + "?sort_by=popularity.desc&api_key=" + ApiKey.mMovieApiKey;
     public static final String mRatingsMoviesUrl = mApiBaseUrl + "/movie/top_rated?api_key=" + ApiKey.mMovieApiKey;
-    public static final String mMovieBaseUrl = mApiBaseUrl + "/movie";
+    public static final String mMovieBaseUrl = mApiBaseUrl + "/movie/";
     public static final String mMovieVideoUrl = "/videos?api_key=" + ApiKey.mMovieApiKey;
     public static final String mMovieReviewUrl = "/reviews?api_key=" + ApiKey.mMovieApiKey;
 
@@ -22,12 +22,16 @@ public class StaticTexts {
     public static final String apiName = "name";
     public static final String apiSite = "site";
     public static final String apiType = "type";
+    public static final String apiAuthor = "author";
+    public static final String apiContent = "content";
+    public static final String apiUrl = "url";
 
     //youtube base video url
     public static final String mYoutubeBaseUrl = "https://www.youtube.com/watch?v=";
 
     public static final int SORT_BY_POPULAR = 0;
     public static final int SORT_BY_RATING = 1;
+    public static final int SORT_FAVORITES = 3;
     public static final int GET_VIDEOS = 2;
     public static final int GET_REVIEWS = 3;
 

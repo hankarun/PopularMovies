@@ -18,7 +18,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.hankarun.popularmovies.R;
 import com.hankarun.popularmovies.activites.OneMovieActivity;
-import com.hankarun.popularmovies.activites.ShowMoviesActivity;
 import com.hankarun.popularmovies.adapters.PosterAdapter;
 import com.hankarun.popularmovies.lib.AppController;
 import com.hankarun.popularmovies.lib.Movie;
@@ -53,15 +52,22 @@ public class ShowMoviesFragment extends Fragment {
 
         mMovies = new ArrayList<>();
 
-        GridView mMovieGridView = (GridView) rootView.findViewById(R.id.gridView);
+        final GridView mMovieGridView = (GridView) rootView.findViewById(R.id.gridView);
         mAdapter = new PosterAdapter(getActivity().getApplicationContext(),mMovies);
         mMovieGridView.setAdapter(mAdapter);
         mMovieGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent myIntent = new Intent(getActivity(), OneMovieActivity.class);
-                myIntent.putExtra("movie", mMovies.get(position).toString());
-                getActivity().startActivity(myIntent);
+                OneMovieFragment oneMovieFragment = (OneMovieFragment) getFragmentManager()
+                        .findFragmentById(R.id.fragment2);
+
+                if (oneMovieFragment == null) {
+                    Intent myIntent = new Intent(getActivity(), OneMovieActivity.class);
+                    myIntent.putExtra("movie", mMovies.get(position).toString());
+                    getActivity().startActivity(myIntent);
+                }else{
+                    oneMovieFragment.setMovie(mMovies.get(position));
+                }
             }
         });
 
@@ -90,9 +96,17 @@ public class ShowMoviesFragment extends Fragment {
                 mCurrentScreen = StaticTexts.SORT_BY_RATING;
                 makeJsonArrayRequest(StaticTexts.SORT_BY_RATING);
                 return true;
+            case R.id.action_show_favorites:
+                mCurrentScreen = StaticTexts.SORT_FAVORITES;
+                loadFavoriteMovies();
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void loadFavoriteMovies(){
+        mMovies.clear();
+        // TODO: Load from database.
     }
 
     private void makeJsonArrayRequest(Integer sortType) {

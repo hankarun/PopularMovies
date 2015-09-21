@@ -27,7 +27,7 @@ public class OneMovieActivity extends AppCompatActivity {
         }
 
         if(getSupportActionBar()!=null)
-            getSupportActionBar().setTitle(mMovie.getOriginalTitle());
+            getSupportActionBar().setTitle("Movie");
 
         setContentView(R.layout.activity_main2);
     }
