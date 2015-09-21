@@ -25,6 +25,7 @@ public class StaticTexts {
     public static final String apiAuthor = "author";
     public static final String apiContent = "content";
     public static final String apiUrl = "url";
+    public static final String apiSize = "size";
 
     //youtube base video url
     public static final String mYoutubeBaseUrl = "https://www.youtube.com/watch?v=";
@@ -34,7 +35,4 @@ public class StaticTexts {
     public static final int SORT_FAVORITES = 3;
     public static final int GET_VIDEOS = 2;
     public static final int GET_REVIEWS = 3;
-
-
-
 }

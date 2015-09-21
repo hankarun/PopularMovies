@@ -9,4 +9,6 @@
     <string name="favorite_movies">Favorite Movies</string>
     <string name="add_to_the_favorites">Added to the favorite movies.</string>
     <string name="removed_from_favorites">Removed from the favorite movies.</string>
+    <string name="there_is_no_review">There is no review.</string>
+    <string name="there_is_no_trailer">There is no trailer.</string>
 </resources>
