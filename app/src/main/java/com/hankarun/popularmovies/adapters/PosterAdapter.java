@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
+import com.hankarun.popularmovies.R;
 import com.hankarun.popularmovies.lib.Movie;
 import com.hankarun.popularmovies.lib.StaticTexts;
 import com.squareup.picasso.Picasso;
@@ -48,7 +49,10 @@ public class PosterAdapter extends BaseAdapter {
             imageView = (ImageView) convertView;
         }
 
-        Picasso.with(mContext).load(StaticTexts.mImageBaseUrl+mMovies.get(position).getMoviePosterUrl()).into(imageView);
+        Picasso.with(mContext)
+                .load(StaticTexts.mImageBaseUrl+mMovies.get(position).getMoviePosterUrl())
+                .placeholder(R.drawable.ic_a10)
+                .into(imageView);
 
         imageView.setAdjustViewBounds(true);
         imageView.setScaleType(ImageView.ScaleType.FIT_XY);

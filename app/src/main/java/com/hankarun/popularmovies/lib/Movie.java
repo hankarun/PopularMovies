@@ -1,6 +1,11 @@
 package com.hankarun.popularmovies.lib;
 
+import android.util.Log;
+
+import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 public class Movie {
     private String originalTitle;
@@ -12,6 +17,8 @@ public class Movie {
 
     private final JSONObject mMovie;
 
+    private ArrayList<Video> mVideos;
+
     public Movie(JSONObject movie) throws Exception{
         mMovie = movie;
 
@@ -21,6 +28,8 @@ public class Movie {
         userRating = movie.getString(StaticTexts.apiUserRating);
         moviePoster = movie.getString(StaticTexts.apiPoster);
         id = movie.getString(StaticTexts.apiId);
+
+        mVideos = new ArrayList<>();
     }
 
     public String getMoviePosterUrl(){ return moviePoster;}
@@ -29,7 +38,19 @@ public class Movie {
     public String getReleaseDate(){ return releaseDate;}
     public String getUserRating(){ return userRating;}
     public String getId(){ return id;}
+    public ArrayList<Video> getmVideos(){ return mVideos;}
 
+    //This must handle all tree json object video + review + movie
     public String toString(){ return mMovie.toString();}
 
+    public void setVideos(JSONArray videos){
+        try {
+            for(int i = 0; i < videos.length(); i++){
+                Video video = new Video((JSONObject) videos.get(i));
+                mVideos.add(video);
+            }
+        } catch (Exception e){
+            Log.d("Exception", e.getMessage());
+        }
+    }
 }
