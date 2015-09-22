@@ -128,7 +128,6 @@ public class OneMovieFragment extends Fragment implements OnClickListener {
     }
 
     private void setViews(View rootView){
-        // TODO fix dis
         RelativeLayout mMainLayout = (RelativeLayout) rootView.findViewById(R.id.mainMovieLayout);
         mMainLayout.setVisibility(View.VISIBLE);
 
@@ -169,8 +168,6 @@ public class OneMovieFragment extends Fragment implements OnClickListener {
                     .error(R.drawable.ic_cloud_big)
                     .into(mImageView);
         }
-
-
 
         String text = "<html><body>" +
                 "<h1 align=\"center\">"+getActivity().getString(R.string.overview)+"</h1>"
@@ -331,7 +328,6 @@ public class OneMovieFragment extends Fragment implements OnClickListener {
     private void deleteFavoriteMovie(Movie movie){
         String selectionClause = MovieTable.COLUMNT_MOVIE_ID + " = ?";
         String[] selectionArgs = {movie.getId()};
-
 
         getActivity().getContentResolver().delete(
                 MovieContentProvider.CONTENT_URI,
