@@ -1,20 +1,30 @@
 package com.hankarun.popularmovies.fragments;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.text.Html;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.webkit.WebView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,16 +34,26 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.hankarun.popularmovies.R;
 import com.hankarun.popularmovies.activites.OneMovieActivity;
+import com.hankarun.popularmovies.activites.ShowMoviesActivity;
 import com.hankarun.popularmovies.lib.AppController;
 import com.hankarun.popularmovies.lib.Movie;
+import com.hankarun.popularmovies.lib.MovieContentProvider;
+import com.hankarun.popularmovies.helpers.MovieTable;
 import com.hankarun.popularmovies.lib.Review;
 import com.hankarun.popularmovies.lib.StaticTexts;
 import com.hankarun.popularmovies.lib.Video;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 public class OneMovieFragment extends Fragment implements OnClickListener {
@@ -44,6 +64,7 @@ public class OneMovieFragment extends Fragment implements OnClickListener {
     private View mRootView;
     private LinearLayout mVideoList;
     private LinearLayout mReviewList;
+    private ImageView mImageView;
 
     public OneMovieFragment() {
     }
@@ -71,10 +92,40 @@ public class OneMovieFragment extends Fragment implements OnClickListener {
                 setViews(mRootView);
                 makeDataRequests();
             }
-            // TODO This is tablet ui. Show empty layout
         }
 
+        setHasOptionsMenu(true);
+
         return mRootView;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.single_movie_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_share:
+                if(mMovie.getmVideos().size() > 0) {
+                    Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+                    sharingIntent.setType("text/plain");
+                    sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.share) + mMovie.getOriginalTitle() + " - " + mMovie.getmVideos().get(0).getName());
+
+                    sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, mMovie.getOriginalTitle() + " - " + mMovie.getmVideos().get(0).getName() + " " + mMovie.getmVideos().get(0).getUrl());
+                    startActivity(Intent.createChooser(sharingIntent, getString(R.string.share_via)));
+                }else{
+                    Toast.makeText(getActivity().getApplicationContext(), R.string.nothing_to_share,Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            case android.R.id.home:
+                getActivity().onBackPressed();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private void makeDataRequests(){
@@ -84,10 +135,10 @@ public class OneMovieFragment extends Fragment implements OnClickListener {
 
     private void setViews(View rootView){
         // TODO fix dis
-        //RelativeLayout mMainLayout = (RelativeLayout) rootView.findViewById(R.id.mainMovieLayout);
-        //mMainLayout.setVisibility(View.VISIBLE);
+        RelativeLayout mMainLayout = (RelativeLayout) rootView.findViewById(R.id.mainMovieLayout);
+        mMainLayout.setVisibility(View.VISIBLE);
 
-        ImageView mImageView = (ImageView) rootView.findViewById(R.id.posterImageView);
+        mImageView = (ImageView) rootView.findViewById(R.id.posterImageView);
         TextView mRatingView = (TextView) rootView.findViewById(R.id.ratingTextView);
         TextView mReleaseDate = (TextView) rootView.findViewById(R.id.releaseDateViewText);
         TextView mMovieName = (TextView) rootView.findViewById(R.id.movieNameView);
@@ -96,14 +147,33 @@ public class OneMovieFragment extends Fragment implements OnClickListener {
 
         mStarImageView = (ImageView) rootView.findViewById(R.id.starImageView);
         mStarImageView.setOnClickListener(this);
+        mIsFavorite = isMovieFavorite(mMovie);
+        if(mIsFavorite){
+            mStarImageView.setImageResource(R.drawable.ic_star_yellow_400_36dp);
+        }else {
+            mStarImageView.setImageResource(R.drawable.ic_star_outline_yellow_400_36dp);
+        }
 
         mVideoList = (LinearLayout) rootView.findViewById(R.id.videosLinearContainer);
         mReviewList = (LinearLayout) rootView.findViewById(R.id.reviewsLinearContainer);
 
-        Picasso.with(getActivity().getApplicationContext())
-                .load(StaticTexts.mImageBaseUrl + mMovie.getMoviePosterUrl())
-                .placeholder(R.drawable.ic_a10)
-                .into(mImageView);
+        File offlineImage = new File(getActivity().getFilesDir().getPath() + mMovie.getId() +".png");
+
+        if(offlineImage.exists()){
+            Picasso.with(getActivity().getApplicationContext())
+                    .load(offlineImage)
+                    .placeholder(R.drawable.ic_file_big)
+                    .error(R.drawable.ic_cloud_big)
+                    .into(mImageView);
+        }else{
+            Picasso.with(getActivity().getApplicationContext())
+                    .load(StaticTexts.mImageBaseUrl + mMovie.getMoviePosterUrl())
+                    .placeholder(R.drawable.ic_file_big)
+                    .error(R.drawable.ic_cloud_big)
+                    .into(mImageView);
+        }
+
+
 
         String text = "<html><body>" +
                 "<h1 align=\"center\">"+getActivity().getString(R.string.overview)+"</h1>"
@@ -143,12 +213,20 @@ public class OneMovieFragment extends Fragment implements OnClickListener {
                 if(mIsFavorite){
                     mStarImageView.setImageResource(R.drawable.ic_star_outline_yellow_400_36dp);
                     message = getString(R.string.removed_from_favorites);
+                    deleteFavoriteMovie(mMovie);
                 }else {
                     mStarImageView.setImageResource(R.drawable.ic_star_yellow_400_36dp);
+                    insertFavoriteMovie(mMovie);
                 }
                 showToast(message);
-                // TODO save current movie to the database check for duoble entry
-                mIsFavorite = ! mIsFavorite;
+                mIsFavorite = !mIsFavorite;
+
+                ShowMoviesFragment leftBarFragment = (ShowMoviesFragment) getFragmentManager()
+                        .findFragmentById(R.id.fragment1);
+
+                if (leftBarFragment != null) {
+                    leftBarFragment.updateFavoriteMovieList();
+                }
                 break;
         }
     }
@@ -165,7 +243,7 @@ public class OneMovieFragment extends Fragment implements OnClickListener {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                            getChilds(response, requestType);
+                        getReviewsAndVideos(response, requestType);
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -173,10 +251,10 @@ public class OneMovieFragment extends Fragment implements OnClickListener {
             }
         });
 
-        AppController.getInstance().addToRequestQueue(req,requestType+"");
+        AppController.getInstance().addToRequestQueue(req, requestType + "");
     }
 
-    private void getChilds(JSONObject object, int requestType){
+    private void getReviewsAndVideos(JSONObject object, int requestType){
         try {
             if(requestType == StaticTexts.GET_VIDEOS){
                 mMovie.setVideos(object.getJSONArray("results"));
@@ -248,6 +326,120 @@ public class OneMovieFragment extends Fragment implements OnClickListener {
 
                 mVideoList.addView(item);
             }
+        }
+    }
+
+    private void deleteFavoriteMovie(Movie movie){
+        String selectionClause = MovieTable.COLUMNT_MOVIE_ID + " = ?";
+        String[] selectionArgs = {movie.getId()};
+
+
+        getActivity().getContentResolver().delete(
+                MovieContentProvider.CONTENT_URI,
+                selectionClause,
+                selectionArgs
+        );
+
+        File file = new File(getActivity().getFilesDir().getPath() + mMovie.getId() +".png");
+        if(file.exists())
+            file.delete();
+
+    }
+
+    private void insertFavoriteMovie(Movie movie){
+        ContentValues newValues = new ContentValues();
+
+        newValues.put(MovieTable.COLUMN_MOVIE_POSTER_URL, movie.getMoviePosterUrl());
+        newValues.put(MovieTable.COLUMN_ORIGINAL_TITLE, movie.getOriginalTitle());
+        newValues.put(MovieTable.COLUMNT_MOVIE_ID, movie.getId());
+        newValues.put(MovieTable.COLUMN_OVERVIEW, movie.getOverview());
+        newValues.put(MovieTable.COLUMN_RELEASE_DATE, movie.getReleaseDate());
+        newValues.put(MovieTable.COLUMN_USER_RATING, movie.getUserRating());
+        newValues.put(MovieTable.COLUMN_JSON_MOVIE, movie.toString());
+
+        getActivity().getContentResolver().insert(
+                MovieContentProvider.CONTENT_URI,
+                newValues
+        );
+
+
+        Target target = new Target() {
+            @Override
+            public void onPrepareLoad(Drawable arg0) {
+            }
+
+            @Override
+            public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom arg1) {
+
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... params) {
+
+                        FileOutputStream out;
+                        try {
+                            out = new FileOutputStream(getActivity().getFilesDir().getPath() + mMovie.getId() +".png");
+                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+                            out.close();
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        return null;
+                    }
+
+                    @Override
+                    protected void onPostExecute(Void info) {
+                    }
+                }.execute();
+            }
+
+            @Override
+            public void onBitmapFailed(Drawable arg0) {
+            }
+        };
+
+        //Save with picasso
+        Picasso.with(getActivity().getApplicationContext())
+                .load(StaticTexts.mImageBaseUrl + mMovie.getMoviePosterUrl())
+                .into(target);
+    }
+
+    private boolean isMovieFavorite(Movie movie){
+
+        String[] projection =
+                {
+                        MovieTable.COLUMNT_MOVIE_ID
+                };
+
+        String selectionClause = null;
+
+        String[] selectionArgs = null;
+
+        String searchString = movie.getId();
+
+        if (!TextUtils.isEmpty(searchString)) {
+            selectionClause = MovieTable.COLUMNT_MOVIE_ID + " = ?";
+
+            selectionArgs = new String[]{ searchString };
+        }
+
+        Cursor cursor = getActivity().getContentResolver().query(
+                MovieContentProvider.CONTENT_URI,
+                projection,
+                selectionClause,
+                selectionArgs,
+                null);
+
+        if (cursor == null) {
+            // Problem
+            return false;
+        } else if (cursor.getCount() < 1) {
+            cursor.close();
+            return false;
+        } else {
+            cursor.close();
+            return true;
         }
     }
 

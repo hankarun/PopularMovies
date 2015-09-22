@@ -1,6 +1,10 @@
 package com.hankarun.popularmovies.fragments;
 
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -12,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -21,6 +26,8 @@ import com.hankarun.popularmovies.activites.OneMovieActivity;
 import com.hankarun.popularmovies.adapters.PosterAdapter;
 import com.hankarun.popularmovies.lib.AppController;
 import com.hankarun.popularmovies.lib.Movie;
+import com.hankarun.popularmovies.lib.MovieContentProvider;
+import com.hankarun.popularmovies.helpers.MovieTable;
 import com.hankarun.popularmovies.lib.StaticTexts;
 
 import org.json.JSONArray;
@@ -71,8 +78,10 @@ public class ShowMoviesFragment extends Fragment {
             }
         });
 
-        Log.d("json",mCurrentScreen+"");
-        makeJsonArrayRequest(mCurrentScreen);
+        if(!isInternetAvailable())
+            mCurrentScreen = StaticTexts.SORT_FAVORITES;
+
+        loadMovies(mCurrentScreen);
 
         setHasOptionsMenu(true);
 
@@ -87,51 +96,90 @@ public class ShowMoviesFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_sort_pop:
-                mCurrentScreen = StaticTexts.SORT_BY_POPULAR;
-                makeJsonArrayRequest(StaticTexts.SORT_BY_POPULAR);
-                return true;
-            case R.id.action_sort_rate:
-                mCurrentScreen = StaticTexts.SORT_BY_RATING;
-                makeJsonArrayRequest(StaticTexts.SORT_BY_RATING);
-                return true;
-            case R.id.action_show_favorites:
-                mCurrentScreen = StaticTexts.SORT_FAVORITES;
-                loadFavoriteMovies();
-            default:
-                return super.onOptionsItemSelected(item);
+        if(!isInternetAvailable()){
+            Toast.makeText(getActivity().getApplicationContext(),"Check internet connection.",Toast.LENGTH_SHORT).show();
+            return super.onOptionsItemSelected(item);
+        }else {
+            switch (item.getItemId()) {
+                case R.id.action_sort_pop:
+                    mCurrentScreen = StaticTexts.SORT_BY_POPULAR;
+                    loadMovies(StaticTexts.SORT_BY_POPULAR);
+                    return true;
+                case R.id.action_sort_rate:
+                    mCurrentScreen = StaticTexts.SORT_BY_RATING;
+                    loadMovies(StaticTexts.SORT_BY_RATING);
+                    return true;
+                case R.id.action_show_favorites:
+                    mCurrentScreen = StaticTexts.SORT_FAVORITES;
+                    loadMovies(StaticTexts.SORT_FAVORITES);
+                default:
+                    return super.onOptionsItemSelected(item);
+            }
+        }
+    }
+
+    public void updateFavoriteMovieList(){
+        if(mCurrentScreen == StaticTexts.SORT_FAVORITES) {
+            mCurrentScreen = StaticTexts.SORT_FAVORITES;
+            loadFavoriteMovies();
         }
     }
 
     private void loadFavoriteMovies(){
-        mMovies.clear();
-        // TODO: Load from database.
-    }
+        Cursor cursor = getActivity().getContentResolver().query(
+                MovieContentProvider.CONTENT_URI,
+                null,
+                null,
+                null,
+                null);
 
-    private void makeJsonArrayRequest(Integer sortType) {
-        mMovies.clear();
-
-        String url;
-        if(sortType == StaticTexts.SORT_BY_POPULAR){
-            url = StaticTexts.mPopularMoviesUrl;
-        }else{
-            url = StaticTexts.mRatingsMoviesUrl;
+        if (cursor == null) {
+            Log.d("Database"," Problem");
+            // Problem
+        } else if (cursor.getCount() > 0) {
+            while(cursor.moveToNext())
+            {
+                try {
+                    Movie movie = new Movie(new JSONObject(cursor.getString(cursor.getColumnIndex(MovieTable.COLUMN_JSON_MOVIE))));
+                    mMovies.add(movie);
+                }catch (Exception e){
+                    Log.d("Json favorite", " movie");
+                }
+            }
+            cursor.close();
         }
 
-        final JsonObjectRequest req = new JsonObjectRequest(url,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        getMovies(response);
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-            }
-        });
+        mAdapter.notifyDataSetChanged();
+    }
 
-        AppController.getInstance().addToRequestQueue(req, sortType + "");
+    private void loadMovies(Integer sortType) {
+        mMovies.clear();
+
+        if (sortType == StaticTexts.SORT_FAVORITES) {
+            loadFavoriteMovies();
+        }else {
+
+            String url;
+            if (sortType == StaticTexts.SORT_BY_POPULAR) {
+                url = StaticTexts.mPopularMoviesUrl;
+            } else {
+                url = StaticTexts.mRatingsMoviesUrl;
+            }
+
+            final JsonObjectRequest req = new JsonObjectRequest(url,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            getMovies(response);
+                        }
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                }
+            });
+
+            AppController.getInstance().addToRequestQueue(req, sortType + "");
+        }
     }
 
     private void getMovies(JSONObject object){
@@ -158,4 +206,11 @@ public class ShowMoviesFragment extends Fragment {
         outState.putInt("data", mCurrentScreen);
     }
 
+    private boolean isInternetAvailable(){
+        ConnectivityManager cm =
+                (ConnectivityManager)getActivity().getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return (activeNetwork != null) && activeNetwork.isConnectedOrConnecting();
+    }
 }

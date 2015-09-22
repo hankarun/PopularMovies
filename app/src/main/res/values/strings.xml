@@ -11,4 +11,8 @@
     <string name="removed_from_favorites">Removed from the favorite movies.</string>
     <string name="there_is_no_review">There is no review.</string>
     <string name="there_is_no_trailer">There is no trailer.</string>
+    <string name="share_trailer">Share Trailer</string>
+    <string name="nothing_to_share">Nothing to share</string>
+    <string name="share_via">Share via</string>
+    <string name="share">"Share "</string>
 </resources>

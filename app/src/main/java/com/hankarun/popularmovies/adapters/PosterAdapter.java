@@ -11,6 +11,7 @@ import com.hankarun.popularmovies.lib.Movie;
 import com.hankarun.popularmovies.lib.StaticTexts;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.List;
 
 public class PosterAdapter extends BaseAdapter {
@@ -49,10 +50,22 @@ public class PosterAdapter extends BaseAdapter {
             imageView = (ImageView) convertView;
         }
 
-        Picasso.with(mContext)
-                .load(StaticTexts.mImageBaseUrl+mMovies.get(position).getMoviePosterUrl())
-                .placeholder(R.drawable.ic_a10)
-                .into(imageView);
+
+        File offlineImage = new File(mContext.getFilesDir().getPath() + mMovies.get(position).getId() +".png");
+
+        if(offlineImage.exists()){
+            Picasso.with(mContext.getApplicationContext())
+                    .load(offlineImage)
+                    .placeholder(R.drawable.ic_file_big)
+                    .error(R.drawable.ic_cloud_big)
+                    .into(imageView);
+        }else{
+            Picasso.with(mContext.getApplicationContext())
+                    .load(StaticTexts.mImageBaseUrl + mMovies.get(position).getMoviePosterUrl())
+                    .placeholder(R.drawable.ic_file_big)
+                    .error(R.drawable.ic_cloud_big)
+                    .into(imageView);
+        }
 
         imageView.setAdjustViewBounds(true);
         imageView.setScaleType(ImageView.ScaleType.FIT_XY);
