@@ -6,12 +6,9 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.text.Html;
 import android.text.TextUtils;
@@ -34,11 +31,10 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.hankarun.popularmovies.R;
 import com.hankarun.popularmovies.activites.OneMovieActivity;
-import com.hankarun.popularmovies.activites.ShowMoviesActivity;
+import com.hankarun.popularmovies.helpers.MovieTable;
 import com.hankarun.popularmovies.lib.AppController;
 import com.hankarun.popularmovies.lib.Movie;
 import com.hankarun.popularmovies.lib.MovieContentProvider;
-import com.hankarun.popularmovies.helpers.MovieTable;
 import com.hankarun.popularmovies.lib.Review;
 import com.hankarun.popularmovies.lib.StaticTexts;
 import com.hankarun.popularmovies.lib.Video;
@@ -51,9 +47,6 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 public class OneMovieFragment extends Fragment implements OnClickListener {
@@ -64,7 +57,8 @@ public class OneMovieFragment extends Fragment implements OnClickListener {
     private View mRootView;
     private LinearLayout mVideoList;
     private LinearLayout mReviewList;
-    private ImageView mImageView;
+    private TextView mReviewTextHeader;
+    private TextView mVideoTextHeader;
 
     public OneMovieFragment() {
     }
@@ -138,11 +132,14 @@ public class OneMovieFragment extends Fragment implements OnClickListener {
         RelativeLayout mMainLayout = (RelativeLayout) rootView.findViewById(R.id.mainMovieLayout);
         mMainLayout.setVisibility(View.VISIBLE);
 
-        mImageView = (ImageView) rootView.findViewById(R.id.posterImageView);
+        ImageView mImageView = (ImageView) rootView.findViewById(R.id.posterImageView);
         TextView mRatingView = (TextView) rootView.findViewById(R.id.ratingTextView);
         TextView mReleaseDate = (TextView) rootView.findViewById(R.id.releaseDateViewText);
         TextView mMovieName = (TextView) rootView.findViewById(R.id.movieNameView);
         TextView mOverview = (TextView) rootView.findViewById(R.id.overViewTextView);
+
+        mReviewTextHeader = (TextView) rootView.findViewById(R.id.reviewTextView);
+        mVideoTextHeader = (TextView) rootView.findViewById(R.id.videosTextView);
 
 
         mStarImageView = (ImageView) rootView.findViewById(R.id.starImageView);
@@ -272,6 +269,7 @@ public class OneMovieFragment extends Fragment implements OnClickListener {
 
     private void fillReviewLayout(List<Review> reviews){
         mReviewList.removeAllViews();
+        mReviewTextHeader.setVisibility(View.VISIBLE);
         if(reviews.size() == 0){
             TextView noReview = new TextView(getActivity().getApplicationContext());
             noReview.setText(R.string.there_is_no_review);
@@ -297,6 +295,7 @@ public class OneMovieFragment extends Fragment implements OnClickListener {
 
     private void fillVideoLayout(List<Video> videos){
         mVideoList.removeAllViews();
+        mVideoTextHeader.setVisibility(View.VISIBLE);
         if(videos.size() == 0){
             TextView noVideo = new TextView(getActivity().getApplicationContext());
             noVideo.setText(R.string.there_is_no_trailer);

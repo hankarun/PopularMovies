@@ -23,6 +23,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.hankarun.popularmovies.R;
 import com.hankarun.popularmovies.activites.OneMovieActivity;
+import com.hankarun.popularmovies.activites.ShowMoviesActivity;
 import com.hankarun.popularmovies.adapters.PosterAdapter;
 import com.hankarun.popularmovies.lib.AppController;
 import com.hankarun.popularmovies.lib.Movie;
@@ -97,19 +98,22 @@ public class ShowMoviesFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(!isInternetAvailable()){
-            Toast.makeText(getActivity().getApplicationContext(),"Check internet connection.",Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity().getApplicationContext(), R.string.check_your_internet_connection,Toast.LENGTH_SHORT).show();
             return super.onOptionsItemSelected(item);
         }else {
             switch (item.getItemId()) {
                 case R.id.action_sort_pop:
+                    ((ShowMoviesActivity) getActivity()).setTitle(getString(R.string.popular_movies));
                     mCurrentScreen = StaticTexts.SORT_BY_POPULAR;
                     loadMovies(StaticTexts.SORT_BY_POPULAR);
                     return true;
                 case R.id.action_sort_rate:
+                    ((ShowMoviesActivity) getActivity()).setTitle(getString(R.string.highest_rated_movies));
                     mCurrentScreen = StaticTexts.SORT_BY_RATING;
                     loadMovies(StaticTexts.SORT_BY_RATING);
                     return true;
                 case R.id.action_show_favorites:
+                    ((ShowMoviesActivity) getActivity()).setTitle(getString(R.string.favorite_movies_title));
                     mCurrentScreen = StaticTexts.SORT_FAVORITES;
                     loadMovies(StaticTexts.SORT_FAVORITES);
                 default:
@@ -120,6 +124,7 @@ public class ShowMoviesFragment extends Fragment {
 
     public void updateFavoriteMovieList(){
         if(mCurrentScreen == StaticTexts.SORT_FAVORITES) {
+            mMovies.clear();
             mCurrentScreen = StaticTexts.SORT_FAVORITES;
             loadFavoriteMovies();
         }

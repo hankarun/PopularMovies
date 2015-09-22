@@ -15,4 +15,10 @@
     <string name="nothing_to_share">Nothing to share</string>
     <string name="share_via">Share via</string>
     <string name="share">"Share "</string>
+    <string name="videos">Videos</string>
+    <string name="review">Reviews</string>
+    <string name="popular_movies">Popular Movies</string>
+    <string name="highest_rated_movies">Higest Rated Movies</string>
+    <string name="favorite_movies_title">Favorite Movies</string>
+    <string name="check_your_internet_connection">Check your internet connection.</string>
 </resources>

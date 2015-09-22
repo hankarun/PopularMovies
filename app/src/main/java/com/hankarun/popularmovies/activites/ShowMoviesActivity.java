@@ -12,4 +12,9 @@ public class ShowMoviesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
     }
+
+    public void setTitle(String title){
+        if(getSupportActionBar() != null)
+            getSupportActionBar().setTitle(title);
+    }
 }
